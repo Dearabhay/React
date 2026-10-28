@@ -1,12 +1,16 @@
 import React from 'react'
 import {Outlet} from 'react-router'
+import Navbar from '../components/Navbar'
 
 const MainLayout =()=>{
     console.log("main")
     return(
-        <div>
-            <nav><h1>hello </h1></nav>
+        <div className="p-2">
+            <Navbar/>
+            <div className="p-4">
             <Outlet/>
+            </div>
+            
         </div>
     )
 }

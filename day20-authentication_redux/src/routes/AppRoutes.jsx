@@ -1,67 +1,93 @@
-import React,{useEffect} from 'react'
-import {RouterProvider,createBrowserRouter} from 'react-router';
-import AuthLayout from "../layout/AuthLayout";
-import LoggingPage from '../pages/LoggingPage';
-import RegisterPage from '../pages/RegisterPage';
-import MainLayout from '../layout/MainLayout';
-import HomePage from '../pages/HomePage';
-import {toast } from 'react-toastify';
-import {useDispatch} from 'react-redux';
-import {addUser} from '../features/authSlice';
-import PublicProtected from '../routes/protected/PublicProtected';
-import MainProtected from '../routes/protected/MainProtected'
+import React, { useEffect } from "react";
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { lazy } from "react";
 
+// Layouts
+const AuthLayout = lazy(() => import("../layout/AuthLayout"));
+const MainLayout = lazy(() => import("../layout/MainLayout"));
 
-const AppRoutes =()=>{
-    let dispatch = useDispatch();
-    const hydrateUser =()=>{
-        let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-        if(!loggedInUser){
-            toast.error("unAuthoried User");
-            return;
-        }
+// Pages
+const LoginPage = lazy(() => import("../pages/LoginPage"));
+const RegisterPage = lazy(() => import("../pages/RegisterPage"));
+const HomePage = lazy(() => import("../pages/HomePage"));
+const ShopPage = lazy(() => import("../pages/ShopPage"));
+const AboutPage = lazy(() => import("../pages/AboutPage"));
 
-        dispatch(addUser(loggedInUser))
+const PublicProtected = lazy(() => import("./protected/PublicProtected"));
+
+const MainProtected = lazy(() => import("./protected/MainProtected"));
+
+import { addUser } from "../features/authSlice";
+
+const AppRoutes = () => {
+  let dispatch = useDispatch();
+
+  const hydrateUser = () => {
+    console.log("hydration processed...");
+    let loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!loggedInUser) {
+      toast.error("UnAuthorized user");
+      return;
     }
-    useEffect(()=>{
-        hydrateUser();
-    },[]);
 
+    dispatch(addUser(loggedInUser));
+  };
 
+  useEffect(() => {
+    hydrateUser();
+  }, []);
 
-    let router = createBrowserRouter([
+  let router = createBrowserRouter([
+    {
+      path: "/",
+      element: <PublicProtected />,
+      children: [
         {
-            path:"/",
-            element:<PublicProtected/>,
-            children:[{
-                path:"",
-                element:<AuthLayout/>,
-               children:[{
-                path:"",
-                element:<LoggingPage/>
-                 },
-                {
-                path:"register",
-                element:<RegisterPage/>
-               },
-             ],
-            }
-            ]
-       },
-       {
-        path:"/main",
-        element:<MainProtected/>,
-        children:[{
-              element:<MainLayout/>,
-              children:[
+          path: "",
+          element: <AuthLayout />,
+          children: [
             {
-                path:"",
-                element:<HomePage/>
-            }
-             ]
-            }]
-       }
-   ])
-    return <RouterProvider router={router}></RouterProvider>
-}
+              path: "",
+              element: <LoginPage />,
+            },
+            {
+              path: "register",
+              element: <RegisterPage />,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "/main",
+      element: <MainProtected />,
+      children: [
+        {
+          path: "",
+          element: <MainLayout />,
+          children: [
+            {
+              path: "",
+              element: <HomePage />,
+            },
+            {
+              path: "shop",
+              element: <ShopPage />,
+            },
+            {
+              path: "about",
+              element: <AboutPage />,
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  return <RouterProvider router={router} />;
+};
+
 export default AppRoutes;
